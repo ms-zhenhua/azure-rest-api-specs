@@ -146,7 +146,7 @@ else {
 }
 
 if ($terraformErrors.Count -gt 0) {
-  $errorString = "Armstrong Validation failed for some files. To fix, address the following errors. For false positive errors, please follow https://eng.ms/docs/products/azure-developer-experience/design/specs-pr-guides/pr-suppressions to suppress 'ArmstrongValidation'"
+  $errorString = "Armstrong Validation failed for some files. To fix, address the following errors. For false positive errors, please follow https://eng.ms/docs/products/azure-developer-experience/design/specs-pr-guides/pr-suppressions to suppress 'ArmstrongValidation'`n"
   $errorString += $terraformErrors -join "`n"
   LogInfo $errorString
 
