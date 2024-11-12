@@ -20,9 +20,9 @@ function Get-Suppression {
   $suppressions = npx get-suppressions ArmstrongValidation $fileInSpecFolder | ConvertFrom-Json -NoEnumerate -AsHashtable
 
   if ($LASTEXITCODE -ne 0) {
-      LogError "Failure running 'npm exec get-suppressions'"
-      LogJobFailure
-      exit 1
+    LogError "Failure running 'npm exec get-suppressions'"
+    LogJobFailure
+    exit 1
   }
 
   return $suppressions ? $suppressions[0] : $null
@@ -148,6 +148,7 @@ else {
 if ($terraformErrors.Count -gt 0) {
   $errorString = "Armstrong Validation failed for some files. To fix, address the following errors. For false positive errors, please follow https://eng.ms/docs/products/azure-developer-experience/design/specs-pr-guides/pr-suppressions to suppress 'ArmstrongValidation'`n"
   $errorString += $terraformErrors -join "`n"
+  $errorString = $errorString.Replace("`n", [System.Environment]::NewLine)
   LogError $errorString
 
   LogJobFailure
