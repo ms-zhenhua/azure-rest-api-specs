@@ -83,7 +83,7 @@ function Validate-Terraform-Error($repoPath, $filePath) {
           $properties = $_.PSObject.Properties
           $item = "Credential Error:"
           foreach ($property in $properties) {
-            $item += "\n    $($property.Name): $($property.Value)" 
+            $item += "`n    $($property.Name): $($property.Value)" 
           }
           
           $result += $item
@@ -105,7 +105,7 @@ LogInfo "Repository: $repositoryName"
 LogInfo "Target branch: $targetBranchName"
 if ($repositoryName -eq "Azure/azure-rest-api-specs" -and $targetBranchName -eq "ms-zhenhua/armstrong-validation") {
   $apiTestingError = "API Testing Warning:"
-  $apiTestingError += "\n    The Pull Request against main branch may need to provide API Testing results. Please follow https://github.com/Azure/armstrong/blob/main/docs/guidance-for-api-test.md to complete the API Testing"
+  $apiTestingError += "`n    The Pull Request against main branch may need to provide API Testing results. Please follow https://github.com/Azure/armstrong/blob/main/docs/guidance-for-api-test.md to complete the API Testing"
   # Though it is a warning, we still log it as error because warning log won't be shown in GitHub
   LogError $apiTestingError
 }
@@ -140,15 +140,14 @@ else {
       $terraformErrors += (Validate-Terraform-Error $repoPath $fullPath)
     }
     catch {
-      $terraformErrors += "  failed to validate errors from Terraform file: $file\n    $_"
+      $terraformErrors += "  failed to validate errors from Terraform file: $file`n    $_"
     }
   }
 }
 
 if ($terraformErrors.Count -gt 0) {
-  $errorString = "Armstrong Validation failed for some files. To fix, address the following errors. For false positive errors, please follow https://eng.ms/docs/products/azure-developer-experience/design/specs-pr-guides/pr-suppressions to suppress 'ArmstrongValidation'\n"
-  $errorString += $terraformErrors -join "\n"
-  LogError $errorString
+  LogError "Armstrong Validation failed for some files. To fix, address the following errors. For false positive errors, please follow https://eng.ms/docs/products/azure-developer-experience/design/specs-pr-guides/pr-suppressions to suppress 'ArmstrongValidation'"
+  LogInfo $terraformErrors -join "`n"
 
   LogJobFailure
   exit 1
