@@ -32,7 +32,7 @@ variable "location" {
 
 variable "flexible_server_password" {
   type      = string
-  #sensitive = true
+  sensitive = true
 }
 
 resource "azapi_resource" "resourceGroup" {
