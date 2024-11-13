@@ -116,13 +116,12 @@ LogInfo "Token: $authToken"
 $hasArmstrongTestResult = $false
 try {
   $response = Get-GitHubIssueComments -RepoOwner $repoOwner -RepoName $repoName -IssueNumber $pullRequestNumber -AuthToken $AuthToken
-  LogInfo $response
-  exit 0
-  $responseObject = $response | ConvertFrom-Json
   for ($i = $responseObject.Length - 1; $i -ge 0; $i--) {
-    if ($responseObject[$i]["body"] -like "*API TEST ERROR REPORT*") {
+    $responseObject = $response[$i] | ConvertFrom-Json
+    LogInfo $responseObject
+    if ($responseObject["body"] -like "*API TEST ERROR REPORT*") {
       hasArmstrongTestResult = $true
-      LogInfo "Armstrong Test result is submitted in PR comments: " + $responseObject[$i]["html_url"]
+      LogInfo "Armstrong Test result is submitted in PR comments: " + $responseObject["html_url"]
     }
   }
 }
