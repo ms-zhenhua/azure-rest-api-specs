@@ -102,21 +102,36 @@ function Validate-Terraform-Error($repoPath, $filePath) {
 
 # Check if the Armstrong Test result is submitted in PR comments
 $repositoryId = [Environment]::GetEnvironmentVariable("GITHUB_REPOSITORY", [EnvironmentVariableTarget]::Process)
+LogInfo "Repository ID: $repositoryId"
+$repoOwner = $repositoryId.Split("/")[0]
+$repoName = $repositoryId.Split("/")[1]
+LogInfo "Repository Owner: $repoOwner"
+LogInfo "Repository Name: $repoName"
 $pullRequestNumber = [Environment]::GetEnvironmentVariable("GH_PR_NUMBER", [EnvironmentVariableTarget]::Process)
 $authToken = [Environment]::GetEnvironmentVariable("GH_TOKEN", [EnvironmentVariableTarget]::Process)
 LogInfo "Repository ID: $repositoryId"
 LogInfo "Pull Request Number: $pullRequestNumber"
 LogInfo "Token: $authToken"
 
+$hasArmstrongTestResult = $false
 try {
-  $resp = Get-GitHubPullRequestComments -RepoId $repositoryId -PullRequestNumber $pullRequestNumber -AuthToken $AuthToken
+  $resp = Get-GitHubIssueComments -RepoOwner $repoOwner -RepoName $repoName -IssueNumber $pullRequestNumber -AuthToken $AuthToken
+  for ($i = $resp.Length - 1; $i -ge 0; $i--) {
+    if ($resp[$i]["body"] -like "*API TEST ERROR REPORT*") {
+      hasArmstrongTestResult = $true
+      LogInfo "Armstrong Test result is submitted in PR comments: " + $resp[$i]["html_url"]
+    }
+  }
 }
 catch { 
-  LogError "Get-GitHubPullRequestComments failed with exception:`n$_"
+  LogError "Get-GitHubIssueComments failed with exception:`n$_"
   exit 1
 }
 
-LogInfo "Response: $resp"
+if (!$hasArmstrongTestResult) {
+  LogError "Armstrong Test result is not submitted in PR comments."
+  exit 1
+}
 
 exit 0
 

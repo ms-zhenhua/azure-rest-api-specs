@@ -113,25 +113,6 @@ function Get-GitHubPullRequest {
     -MaximumRetryCount 3
 }
 
-function Get-GitHubPullRequestComments {
-  param (
-    $RepoId,
-    [Parameter(Mandatory = $true)]
-    $PullRequestNumber,
-    [ValidateNotNullOrEmpty()]
-    [Parameter(Mandatory = $true)]
-    $AuthToken
-  )
-
-  $uri = "$GithubAPIBaseURI/$RepoId/pulls/$PullRequestNumber/comments"
-
-  return Invoke-RestMethod `
-    -Method GET `
-    -Uri $uri `
-    -Headers (Get-GitHubApiHeaders -token $AuthToken) `
-    -MaximumRetryCount 3
-}
-
 function New-GitHubPullRequest {
   param (
     $RepoOwner,
@@ -239,6 +220,27 @@ function Get-GitHubIssues {
   if ($CreatedBy) {
     $uri += "&creator=$CreatedBy"
   }
+
+  return Invoke-RestMethod `
+    -Method GET `
+    -Uri $uri `
+    -Headers (Get-GitHubApiHeaders -token $AuthToken) `
+    -MaximumRetryCount 3
+}
+
+function Get-GitHubIssueComments {
+  param (
+    [Parameter(Mandatory = $true)]
+    $RepoOwner,
+    [Parameter(Mandatory = $true)]
+    $RepoName,
+    [Parameter(Mandatory = $true)]
+    $IssueNumber,
+    [Parameter(Mandatory = $true)]
+    $AuthToken
+  )
+
+  $uri = "$GithubAPIBaseURI/$RepoOwner/$RepoName/issues/$IssueNumber/comments"
 
   return Invoke-RestMethod `
     -Method GET `

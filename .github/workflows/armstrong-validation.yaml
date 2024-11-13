@@ -25,9 +25,6 @@ jobs:
 
     - name: Setup Node and run `npm ci`
       uses: ./.github/actions/setup-node-npm-ci
-  
-    - name: Print
-      run: env | sort
 
     - name: Armstrong Validation
       run: |
