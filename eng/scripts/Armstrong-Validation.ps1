@@ -102,6 +102,25 @@ function Validate-Terraform-Error($repoPath, $filePath) {
   return $result
 }
 
+# Check if the Armstrong Test result is submitted in PR comments
+$repositoryId = [Environment]::GetEnvironmentVariable("BUILD_REPOSITORY_ID", [EnvironmentVariableTarget]::Process)
+$pullRequestNumber = [Environment]::GetEnvironmentVariable("SYSTEM_PULLREQUEST_PULLREQUESTNUMBER", [EnvironmentVariableTarget]::Process)
+LogInfo "Repository ID: $repositoryId"
+LogInfo "Pull Request Number: $pullRequestNumber"
+LogInfo "Token: $AuthToken"
+
+try {
+  $resp = Get-GitHubPullRequestComments -RepoId $repositoryId -PullRequestNumber $pullRequestNumber -AuthToken $AuthToken
+}
+catch { 
+  LogError "Get-GitHubPullRequestComments failed with exception:`n$_"
+  exit 1
+}
+
+LogInfo "Response: $resp"
+
+exit 0
+
 # Check if the repository and target branch are the ones that need to do API Testing
 $repositoryName = [Environment]::GetEnvironmentVariable("BUILD_REPOSITORY_NAME", [EnvironmentVariableTarget]::Process)
 $targetBranchName = [Environment]::GetEnvironmentVariable("SYSTEM_PULLREQUEST_TARGETBRANCH", [EnvironmentVariableTarget]::Process)
@@ -158,21 +177,3 @@ if ($terraformErrors.Count -gt 0) {
   exit 1
 }
 
-# Check if the Armstrong Test result is submitted in PR comments
-$repositoryId = [Environment]::GetEnvironmentVariable("BUILD_REPOSITORY_ID", [EnvironmentVariableTarget]::Process)
-$pullRequestNumber = [Environment]::GetEnvironmentVariable("SYSTEM_PULLREQUEST_PULLREQUESTNUMBER", [EnvironmentVariableTarget]::Process)
-LogInfo "Repository ID: $repositoryId"
-LogInfo "Pull Request Number: $pullRequestNumber"
-LogInfo "Token: $AuthToken"
-
-try {
-  $resp = Get-GitHubPullRequestComments -RepoId $repositoryId -PullRequestNumber $pullRequestNumber -AuthToken $AuthToken
-}
-catch { 
-  LogError "Get-GitHubPullRequestComments failed with exception:`n$_"
-  exit 1
-}
-
-LogInfo "Response: $resp"
-
-exit 0
