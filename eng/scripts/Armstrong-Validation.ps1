@@ -1,8 +1,5 @@
 [CmdletBinding()]
 param (
-  [Parameter(Mandatory = $true)]
-  [string]$AuthToken,
-
   [Parameter(Position = 0)]
   [string] $BaseCommitish = "HEAD^",
 
@@ -103,15 +100,12 @@ function Validate-Terraform-Error($repoPath, $filePath) {
 }
 
 # Check if the Armstrong Test result is submitted in PR comments
-$repositoryName = [Environment]::GetEnvironmentVariable("BUILD_REPOSITORY_NAME", [EnvironmentVariableTarget]::Process)
-$targetBranchName = [Environment]::GetEnvironmentVariable("SYSTEM_PULLREQUEST_TARGETBRANCH", [EnvironmentVariableTarget]::Process)
-LogInfo "Repository: $repositoryName"
-LogInfo "Target branch: $targetBranchName"
 $repositoryId = [Environment]::GetEnvironmentVariable("GITHUB_REPOSITORY", [EnvironmentVariableTarget]::Process)
-$pullRequestNumber = [Environment]::GetEnvironmentVariable("SYSTEM_PULLREQUEST_PULLREQUESTNUMBER", [EnvironmentVariableTarget]::Process)
+$pullRequestNumber = [Environment]::GetEnvironmentVariable("GH_PR_NUMBER", [EnvironmentVariableTarget]::Process)
+$authToken = [Environment]::GetEnvironmentVariable("GH_TOKEN", [EnvironmentVariableTarget]::Process)
 LogInfo "Repository ID: $repositoryId"
 LogInfo "Pull Request Number: $pullRequestNumber"
-LogInfo "Token: $AuthToken"
+LogInfo "Token: $authToken"
 
 try {
   $resp = Get-GitHubPullRequestComments -RepoId $repositoryId -PullRequestNumber $pullRequestNumber -AuthToken $AuthToken
@@ -126,16 +120,16 @@ LogInfo "Response: $resp"
 exit 0
 
 # Check if the repository and target branch are the ones that need to do API Testing
-$repositoryName = [Environment]::GetEnvironmentVariable("BUILD_REPOSITORY_NAME", [EnvironmentVariableTarget]::Process)
-$targetBranchName = [Environment]::GetEnvironmentVariable("SYSTEM_PULLREQUEST_TARGETBRANCH", [EnvironmentVariableTarget]::Process)
-LogInfo "Repository: $repositoryName"
-LogInfo "Target branch: $targetBranchName"
-if ($repositoryName -eq "Azure/azure-rest-api-specs" -and $targetBranchName -eq "ms-zhenhua/armstrong-validation") {
-  $apiTestingError = "API Testing Warning:"
-  $apiTestingError += "`n    The Pull Request against main branch may need to provide API Testing results. Please follow https://github.com/Azure/armstrong/blob/main/docs/guidance-for-api-test.md to complete the API Testing"
-  # Though it is a warning, we still log it as error because warning log won't be shown in GitHub
-  LogError $apiTestingError
-}
+#$repositoryName = [Environment]::GetEnvironmentVariable("BUILD_REPOSITORY_NAME", [EnvironmentVariableTarget]::Process)
+#$targetBranchName = [Environment]::GetEnvironmentVariable("SYSTEM_PULLREQUEST_TARGETBRANCH", [EnvironmentVariableTarget]::Process)
+#LogInfo "Repository: $repositoryName"
+#LogInfo "Target branch: $targetBranchName"
+#if ($repositoryName -eq "Azure/azure-rest-api-specs" -and $targetBranchName -eq "ms-zhenhua/armstrong-validation") {
+#  $apiTestingError = "API Testing Warning:"
+#  $apiTestingError += "`n    The Pull Request against main branch may need to provide API Testing results. Please follow https://github.com/Azure/armstrong/blob/main/docs/guidance-for-api-test.md to complete the API Testing"
+# Though it is a warning, we still log it as error because warning log won't be shown in GitHub
+#  LogError $apiTestingError
+#}
 
 $repoPath = Resolve-Path "$PSScriptRoot/../.."
 
