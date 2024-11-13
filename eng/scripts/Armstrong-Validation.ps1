@@ -162,6 +162,7 @@ if ($terraformErrors.Count -gt 0) {
 $repositoryId = [Environment]::GetEnvironmentVariable("BUILD_REPOSITORY_ID", [EnvironmentVariableTarget]::Process)
 $pullRequestNumber = [Environment]::GetEnvironmentVariable("SYSTEM_PULLREQUEST_PULLREQUESTNUMBER", [EnvironmentVariableTarget]::Process)
 LogInfo "Repository ID: $repositoryId"
+LogInfo "Pull Request Number: $pullRequestNumber"
 LogInfo "Token: $AuthToken"
 
 try {
