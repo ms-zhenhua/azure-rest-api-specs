@@ -26,10 +26,13 @@ jobs:
     - name: Setup Node and run `npm ci`
       uses: ./.github/actions/setup-node-npm-ci
   
+    - name: Print
+      run: env | sort
+
     - name: Armstrong Validation
       run: |
         # Keep processing when errors are written. Nonzero exit will mark the 
         # step as failed. 
         
-        ./eng/scripts/Armstrong-Validation.ps1 -Verbose
+        ./eng/scripts/Armstrong-Validation.ps1 -RepoOwner -RepoName -PullRequestNumber -AuthToken secrets.GITHUB_TOKEN -Verbose
       shell: pwsh

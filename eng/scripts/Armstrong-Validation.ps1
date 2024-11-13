@@ -1,11 +1,31 @@
 [CmdletBinding()]
 param (
+  [Parameter(Mandatory = $true)]
+  [string]$RepoOwner,
+
+  [Parameter(Mandatory = $true)]
+  [string]$RepoName,
+
+  [Parameter(Mandatory = $true)]
+  $PullRequestNumber,
+
+  [Parameter(Mandatory = $true)]
+  [string]$AuthToken,
+
   [Parameter(Position = 0)]
   [string] $BaseCommitish = "HEAD^",
+
   [Parameter(Position = 1)]
   [string] $TargetCommitish = "HEAD"
 )
 Set-StrictMode -Version 3
+
+LogInfo $RepoOwner
+LogInfo $RepoName
+LogInfo $PullRequestNumber
+LogInfo $AuthToken
+
+exit 1
 
 . $PSScriptRoot/../common/scripts/logging.ps1
 . $PSScriptRoot/ChangedFiles-Functions.ps1
@@ -151,6 +171,16 @@ if ($terraformErrors.Count -gt 0) {
   LogInfo $errorString
 
   LogJobFailure
+  exit 1
+}
+
+# Check if the Armstrong Test result is submitted in PR comments
+try {
+  $resp = Get-GitHubPullRequestComments -RepoOwner $RepoOwner -RepoName $RepoName `
+    -Head "${PROwner}:${PRBranch}" -Base $BaseBranch -AuthToken $AuthToken
+}
+catch { 
+  LogError "Get-GitHubPullRequestComments failed with exception:`n$_"
   exit 1
 }
 
