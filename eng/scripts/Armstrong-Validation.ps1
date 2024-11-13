@@ -165,7 +165,7 @@ LogInfo "Repository ID: $repositoryId"
 LogInfo "Token: $AuthToken"
 
 try {
-  $resp = Get-GitHubPullRequestComments -RepoId $RepoOwner -PullRequestNumber -AuthToken $AuthToken
+  $resp = Get-GitHubPullRequestComments -RepoId $repositoryId -PullRequestNumber $pullRequestNumber -AuthToken $AuthToken
 }
 catch { 
   LogError "Get-GitHubPullRequestComments failed with exception:`n$_"
