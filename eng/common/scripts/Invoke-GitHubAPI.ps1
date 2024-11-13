@@ -115,9 +115,7 @@ function Get-GitHubPullRequest {
 
 function Get-GitHubPullRequestComments {
   param (
-    $RepoOwner,
-    $RepoName,
-    $RepoId = "$RepoOwner/$RepoName",
+    $RepoId,
     [Parameter(Mandatory = $true)]
     $PullRequestNumber,
     [ValidateNotNullOrEmpty()]

@@ -1,15 +1,6 @@
 [CmdletBinding()]
 param (
   [Parameter(Mandatory = $true)]
-  [string]$RepoOwner,
-
-  [Parameter(Mandatory = $true)]
-  [string]$RepoName,
-
-  [Parameter(Mandatory = $true)]
-  $PullRequestNumber,
-
-  [Parameter(Mandatory = $true)]
   [string]$AuthToken,
 
   [Parameter(Position = 0)]
@@ -19,13 +10,6 @@ param (
   [string] $TargetCommitish = "HEAD"
 )
 Set-StrictMode -Version 3
-
-LogInfo $RepoOwner
-LogInfo $RepoName
-LogInfo $PullRequestNumber
-LogInfo $AuthToken
-
-exit 1
 
 . $PSScriptRoot/../common/scripts/logging.ps1
 . $PSScriptRoot/ChangedFiles-Functions.ps1
@@ -175,13 +159,19 @@ if ($terraformErrors.Count -gt 0) {
 }
 
 # Check if the Armstrong Test result is submitted in PR comments
+$repositoryId = [Environment]::GetEnvironmentVariable("BUILD_REPOSITORY_ID", [EnvironmentVariableTarget]::Process)
+$pullRequestNumber = [Environment]::GetEnvironmentVariable("SYSTEM_PULLREQUEST_PULLREQUESTNUMBER", [EnvironmentVariableTarget]::Process)
+LogInfo "Repository ID: $repositoryId"
+LogInfo "Token: $AuthToken"
+
 try {
-  $resp = Get-GitHubPullRequestComments -RepoOwner $RepoOwner -RepoName $RepoName `
-    -Head "${PROwner}:${PRBranch}" -Base $BaseBranch -AuthToken $AuthToken
+  $resp = Get-GitHubPullRequestComments -RepoId $RepoOwner -PullRequestNumber -AuthToken $AuthToken
 }
 catch { 
   LogError "Get-GitHubPullRequestComments failed with exception:`n$_"
   exit 1
 }
+
+LogInfo "Response: $resp"
 
 exit 0
