@@ -103,7 +103,11 @@ function Validate-Terraform-Error($repoPath, $filePath) {
 }
 
 # Check if the Armstrong Test result is submitted in PR comments
-$repositoryId = [Environment]::GetEnvironmentVariable("BUILD_REPOSITORY_ID", [EnvironmentVariableTarget]::Process)
+$repositoryName = [Environment]::GetEnvironmentVariable("BUILD_REPOSITORY_NAME", [EnvironmentVariableTarget]::Process)
+$targetBranchName = [Environment]::GetEnvironmentVariable("SYSTEM_PULLREQUEST_TARGETBRANCH", [EnvironmentVariableTarget]::Process)
+LogInfo "Repository: $repositoryName"
+LogInfo "Target branch: $targetBranchName"
+$repositoryId = [Environment]::GetEnvironmentVariable("GITHUB_REPOSITORY", [EnvironmentVariableTarget]::Process)
 $pullRequestNumber = [Environment]::GetEnvironmentVariable("SYSTEM_PULLREQUEST_PULLREQUESTNUMBER", [EnvironmentVariableTarget]::Process)
 LogInfo "Repository ID: $repositoryId"
 LogInfo "Pull Request Number: $pullRequestNumber"
