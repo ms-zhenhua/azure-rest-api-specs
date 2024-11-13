@@ -34,5 +34,5 @@ jobs:
         # Keep processing when errors are written. Nonzero exit will mark the 
         # step as failed. 
         
-        ./eng/scripts/Armstrong-Validation.ps1 -RepoOwner -RepoName -PullRequestNumber -AuthToken secrets.GITHUB_TOKEN -Verbose
+        ./eng/scripts/Armstrong-Validation.ps1 -AuthToken secrets.GITHUB_TOKEN -Verbose
       shell: pwsh
