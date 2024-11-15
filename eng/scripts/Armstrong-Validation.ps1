@@ -23,7 +23,6 @@ function Get-Suppression {
 
   if ($LASTEXITCODE -ne 0) {
     LogError "Failure running 'npm exec get-suppressions'"
-    LogJobFailure
     exit 1
   }
 
@@ -117,11 +116,24 @@ try {
   $response = Get-GitHubIssueComments -RepoOwner $repoOwner -RepoName $repoName -IssueNumber $pullRequestNumber -AuthToken $AuthToken
   for ($i = $response.Length - 1; $i -ge 0; $i--) {
     $responseObject = $response[$i]
-    LogInfo $responseObject.body
     if ($responseObject.body -like "*API TEST ERROR REPORT*") {
+      LogInfo $responseObject.body
       $hasArmstrongTestResult = $true
-      LogInfo "Armstrong Test result is submitted in PR comments: $($responseObject.html_url)."
-    }
+      LogInfo "Armstrong Test result is submitted in PR comments: $($responseObject.html_url)"
+
+      if ($responseObject.body -like "**message**:") {
+        LogError "Please fix all errors in API TEST ERROR REPORT"
+        exit 1
+      }
+
+      $coverages = [regex]::Matches($responseObject.body, '(\d+(\.\d+)?)(?=%)')
+      # Output the matches
+      foreach ($coverage in $coverages) {
+        if ($coverage.Value + "%" -ne "100.0%") {
+          LogError "Properties of APIs are not 100% covered in API TEST ERROR REPORT"
+          exit 1
+        }
+      }
   }
 }
 catch { 
@@ -187,8 +199,6 @@ if ($terraformErrors.Count -gt 0) {
   $errorString = "Armstrong Validation failed for some files. To fix, address the following errors. For false positive errors, please follow https://eng.ms/docs/products/azure-developer-experience/design/specs-pr-guides/pr-suppressions to suppress 'ArmstrongValidation'`n"
   $errorString += $terraformErrors -join "`n"
   LogInfo $errorString
-
-  LogJobFailure
   exit 1
 }
 
