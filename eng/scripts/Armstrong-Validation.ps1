@@ -116,10 +116,11 @@ $hasArmstrongTestResult = $false
 try {
   $response = Get-GitHubIssueComments -RepoOwner $repoOwner -RepoName $repoName -IssueNumber $pullRequestNumber -AuthToken $AuthToken
   for ($i = $response.Length - 1; $i -ge 0; $i--) {
-    LogInfo $response.body
-    if ($response.body -like "*API TEST ERROR REPORT*") {
+    $responseObject = $response[$i]
+    LogInfo $responseObject.body
+    if ($responseObject.body -like "*API TEST ERROR REPORT*") {
       $hasArmstrongTestResult = $true
-      LogInfo "Armstrong Test result is submitted in PR comments: $($response.html_url)."
+      LogInfo "Armstrong Test result is submitted in PR comments: $($responseObject.html_url)."
     }
   }
 }
