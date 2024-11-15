@@ -116,11 +116,11 @@ try {
   $response = Get-GitHubIssueComments -RepoOwner $repoOwner -RepoName $repoName -IssueNumber $pullRequestNumber -AuthToken $AuthToken
   for ($i = $response.Length - 1; $i -ge 0; $i--) {
     $responseObject = $response[$i]
-    if ($responseObject.body -like "*API TEST ERROR REPORT*") {
+    if ($responseObject.body.Contains("API TEST ERROR REPORT")) {
       LogInfo $responseObject.body
       $hasArmstrongTestResult = $true
 
-      if ($responseObject.body -like "**message**:") {
+      if ($responseObject.body.Contains("**message**:")) {
         LogError "Please fix all errors in API TEST ERROR REPORT: $($responseObject.html_url)"
       }
 
@@ -138,7 +138,7 @@ try {
   }
 }
 catch { 
-  LogError "Failed with exception:`n$_"
+  LogError "Failed with exception: $_"
   exit 1
 }
 
