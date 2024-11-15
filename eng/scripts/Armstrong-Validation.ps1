@@ -111,7 +111,6 @@ $pullRequestNumber = [Environment]::GetEnvironmentVariable("GH_PR_NUMBER", [Envi
 $authToken = [Environment]::GetEnvironmentVariable("GH_TOKEN", [EnvironmentVariableTarget]::Process)
 LogInfo "Repository ID: $repositoryId"
 LogInfo "Pull Request Number: $pullRequestNumber"
-LogInfo "Token: $authToken"
 
 $hasArmstrongTestResult = $false
 try {
