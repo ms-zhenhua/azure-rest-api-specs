@@ -128,7 +128,7 @@ try {
       # Output the matches
       foreach ($coverage in $coverages) {
         if ($coverage.Value + "%" -ne "100.0%") {
-          LogError "Properties are not 100% covered in API TEST ERROR REPORT: $($responseObject.html_url)"
+          LogError "Properties of some APIs are not 100% covered in API TEST ERROR REPORT: $($responseObject.html_url)"
         }
       }
 
