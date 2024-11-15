@@ -134,6 +134,7 @@ try {
           exit 1
         }
       }
+    }
   }
 }
 catch { 
