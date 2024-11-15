@@ -119,26 +119,26 @@ try {
     if ($responseObject.body -like "*API TEST ERROR REPORT*") {
       LogInfo $responseObject.body
       $hasArmstrongTestResult = $true
-      LogInfo "Armstrong Test result is submitted in PR comments: $($responseObject.html_url)"
 
       if ($responseObject.body -like "**message**:") {
-        LogError "Please fix all errors in API TEST ERROR REPORT"
-        exit 1
+        LogError "Please fix all errors in API TEST ERROR REPORT: $($responseObject.html_url)"
       }
 
       $coverages = [regex]::Matches($responseObject.body, '(\d+(\.\d+)?)(?=%)')
       # Output the matches
       foreach ($coverage in $coverages) {
         if ($coverage.Value + "%" -ne "100.0%") {
-          LogError "Properties of APIs are not 100% covered in API TEST ERROR REPORT"
-          exit 1
+          LogError "Properties are not 100% covered in API TEST ERROR REPORT: $($responseObject.html_url)"
         }
       }
+
+      LogInfo "Armstrong Test result is submitted in PR comments: $($responseObject.html_url)"
+      break
     }
   }
 }
 catch { 
-  LogError "Get-GitHubIssueComments failed with exception:`n$_"
+  LogError "Failed with exception:`n$_"
   exit 1
 }
 
