@@ -119,8 +119,6 @@ foreach ($file in $addedFiles) {
   }
 }
 
-exit 0
-
 # Check Armstrong Configurations
 $terraformErrors = @()
 
@@ -131,24 +129,23 @@ else {
   foreach ($file in $filesToCheck) {
     LogInfo "Checking $file"
 
-    $fullPath = (Join-Path $repoPath $file)
+    $filePath = (Join-Path $repoPath $file)
 
-    $suppression = Get-Suppression $fullPath
+    $suppression = Get-Suppression ArmstrongValidation $filePath
     if ($suppression) {
       $reason = $suppression["reason"] ?? "<no reason specified>"
 
-      LogInfo "  Suppressed: $reason"
-      # Skip further checks, to avoid potential errors on files already suppressed
+      LogInfo "$file suppressed Armstrong configuration validation: $reason"
       continue
     }
 
     try {
       Ensure-Armstrong-Installed
-      LogInfo "  Validating errors from Terraform file: $fullPath"
-      $terraformErrors += (Validate-Terraform-Error $repoPath $fullPath)
+      LogInfo "  Validating errors from Terraform file: $filePath"
+      $terraformErrors += (Validate-Terraform-Error $repoPath $filePath)
     }
     catch {
-      $terraformErrors += "  failed to validate errors from Terraform file: $file`n    $_"
+      $terraformErrors += "failed to validate errors from Terraform file $file : $_"
     }
   }
 }
@@ -159,6 +156,8 @@ if ($terraformErrors.Count -gt 0) {
   LogInfo $errorString
   exit 1
 }
+
+exit 0
 
 # Check the Armstrong Test Result
 $repositoryId = [Environment]::GetEnvironmentVariable("GITHUB_REPOSITORY", [EnvironmentVariableTarget]::Process)
