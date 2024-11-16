@@ -1,0 +1,3 @@
+- tool: ArmstrongValidation
+  path: main.tf
+  reason: Why this can't be fixed
