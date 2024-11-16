@@ -11,23 +11,7 @@ Set-StrictMode -Version 3
 . $PSScriptRoot/../common/scripts/Invoke-GitHubAPI.ps1
 . $PSScriptRoot/../common/scripts/logging.ps1
 . $PSScriptRoot/ChangedFiles-Functions.ps1
-
-function Get-Suppression {
-  param (
-    [string]$fileInSpecFolder
-  )
-
-  # -NoEnumerate to prevent single-element arrays from being collapsed to a single object
-  # -AsHashtable is closer to raw JSON than PSCustomObject
-  $suppressions = npx get-suppressions ArmstrongValidation $fileInSpecFolder | ConvertFrom-Json -NoEnumerate -AsHashtable
-
-  if ($LASTEXITCODE -ne 0) {
-    LogError "Failure running 'npm exec get-suppressions'"
-    exit 1
-  }
-
-  return $suppressions ? $suppressions[0] : $null
-}
+. $PSScriptRoot/Suppressions-Functions.ps1
 
 function Get-ChangedTerraformFiles($changedFiles = (Get-ChangedFiles)) {
   $changedFiles = Get-ChangedFilesUnderSpecification $changedFiles
@@ -99,7 +83,65 @@ function Validate-Terraform-Error($repoPath, $filePath) {
   return $result
 }
 
-# Check if the Armstrong Test result is submitted in PR comments
+function Get-AddedSwaggerFiles() {
+  $addedFiles = git -c core.quotepath=off diff --name-status --diff-filter=d $BaseCommitish $TargetCommitish | Where-Object { $_ -match 'A\s' } | ForEach-Object { $_.Substring(2).Trim() }
+  $addedSwaggerFiles = $addedFiles.Where({ 
+    $_.EndsWith(".json")
+  })
+    
+  return $addedSwaggerFiles
+}
+
+# Check whether new swagger files have Armstrong Configurations
+$addedFiles = Get-AddedSwaggerFiles
+LogInfo $addedFiles
+
+exit 0
+
+#
+$repoPath = Resolve-Path "$PSScriptRoot/../.."
+
+$terraformErrors = @()
+
+$filesToCheck = (Get-ChangedTerraformFiles (Get-ChangedFiles $BaseCommitish $TargetCommitish))
+
+if (!$filesToCheck) {
+  LogInfo "No Terraform files found to check"
+}
+else {
+  foreach ($file in $filesToCheck) {
+    LogInfo "Checking $file"
+
+    $fullPath = (Join-Path $repoPath $file)
+
+    $suppression = Get-Suppression $fullPath
+    if ($suppression) {
+      $reason = $suppression["reason"] ?? "<no reason specified>"
+
+      LogInfo "  Suppressed: $reason"
+      # Skip further checks, to avoid potential errors on files already suppressed
+      continue
+    }
+
+    try {
+      Ensure-Armstrong-Installed
+      LogInfo "  Validating errors from Terraform file: $fullPath"
+      $terraformErrors += (Validate-Terraform-Error $repoPath $fullPath)
+    }
+    catch {
+      $terraformErrors += "  failed to validate errors from Terraform file: $file`n    $_"
+    }
+  }
+}
+
+if ($terraformErrors.Count -gt 0) {
+  $errorString = "Armstrong Validation failed for some files. To fix, address the following errors. For false positive errors, please follow https://eng.ms/docs/products/azure-developer-experience/design/specs-pr-guides/pr-suppressions to suppress 'ArmstrongValidation'`n"
+  $errorString += $terraformErrors -join "`n"
+  LogInfo $errorString
+  exit 1
+}
+
+# Check the Armstrong Test Result
 $repositoryId = [Environment]::GetEnvironmentVariable("GITHUB_REPOSITORY", [EnvironmentVariableTarget]::Process)
 LogInfo "Repository ID: $repositoryId"
 $repoOwner = $repositoryId.Split("/")[0]
@@ -148,58 +190,3 @@ if (!$hasArmstrongTestResult) {
 }
 
 exit 0
-
-# Check if the repository and target branch are the ones that need to do API Testing
-#$repositoryName = [Environment]::GetEnvironmentVariable("BUILD_REPOSITORY_NAME", [EnvironmentVariableTarget]::Process)
-#$targetBranchName = [Environment]::GetEnvironmentVariable("SYSTEM_PULLREQUEST_TARGETBRANCH", [EnvironmentVariableTarget]::Process)
-#LogInfo "Repository: $repositoryName"
-#LogInfo "Target branch: $targetBranchName"
-#if ($repositoryName -eq "Azure/azure-rest-api-specs" -and $targetBranchName -eq "ms-zhenhua/armstrong-validation") {
-#  $apiTestingError = "API Testing Warning:"
-#  $apiTestingError += "`n    The Pull Request against main branch may need to provide API Testing results. Please follow https://github.com/Azure/armstrong/blob/main/docs/guidance-for-api-test.md to complete the API Testing"
-# Though it is a warning, we still log it as error because warning log won't be shown in GitHub
-#  LogError $apiTestingError
-#}
-
-$repoPath = Resolve-Path "$PSScriptRoot/../.."
-
-$terraformErrors = @()
-
-$filesToCheck = (Get-ChangedTerraformFiles (Get-ChangedFiles $BaseCommitish $TargetCommitish))
-
-if (!$filesToCheck) {
-  LogInfo "No Terraform files found to check"
-}
-else {
-  foreach ($file in $filesToCheck) {
-    LogInfo "Checking $file"
-
-    $fullPath = (Join-Path $repoPath $file)
-
-    $suppression = Get-Suppression $fullPath
-    if ($suppression) {
-      $reason = $suppression["reason"] ?? "<no reason specified>"
-
-      LogInfo "  Suppressed: $reason"
-      # Skip further checks, to avoid potential errors on files already suppressed
-      continue
-    }
-
-    try {
-      Ensure-Armstrong-Installed
-      LogInfo "  Validating errors from Terraform file: $fullPath"
-      $terraformErrors += (Validate-Terraform-Error $repoPath $fullPath)
-    }
-    catch {
-      $terraformErrors += "  failed to validate errors from Terraform file: $file`n    $_"
-    }
-  }
-}
-
-if ($terraformErrors.Count -gt 0) {
-  $errorString = "Armstrong Validation failed for some files. To fix, address the following errors. For false positive errors, please follow https://eng.ms/docs/products/azure-developer-experience/design/specs-pr-guides/pr-suppressions to suppress 'ArmstrongValidation'`n"
-  $errorString += $terraformErrors -join "`n"
-  LogInfo $errorString
-  exit 1
-}
-
