@@ -114,7 +114,7 @@ foreach ($file in $addedFiles) {
   })
 
   if ($terraformFiles.Count -eq 0) {
-    LogError "The directroy of the new swagger file $directory does not have Armstrong Configurations"
+    LogError "The new swagger file $file does not have Armstrong Configurations"
     exit 1
   }
 }
