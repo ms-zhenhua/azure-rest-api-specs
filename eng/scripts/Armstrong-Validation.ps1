@@ -93,6 +93,7 @@ function Get-AddedSwaggerFiles() {
 }
 
 $repoPath = Resolve-Path "$PSScriptRoot/../.."
+$filesToCheck = (Get-ChangedTerraformFiles (Get-ChangedFiles $BaseCommitish $TargetCommitish))
 
 # Check whether new swagger files have Armstrong Configurations
 $addedFiles = Get-AddedSwaggerFiles
@@ -106,20 +107,21 @@ foreach ($file in $addedFiles) {
     continue
   }
 
-  $filePath = (Join-Path $repoPath $file)
-  $directoryPath = (Join-Path $repoPath $directory)
-  $terraformPath = (Join-Path $directoryPath "terraform")
+  $terraformFiles = $filesToCheck.Where({ 
+    # since `git diff` returns paths with `/`, use the following code to match the `main.tf`
+    $_.StartsWith($directory)
+  })
 
-  if (!(Test-Path -Path $terraformPath)) {
+  if ($terraformFiles.Count == 0) {
     LogError "The directroy of the new swagger file $directory does not have Armstrong Configurations"
     exit 1
   }
 }
 
-#
-$terraformErrors = @()
+exit 0
 
-$filesToCheck = (Get-ChangedTerraformFiles (Get-ChangedFiles $BaseCommitish $TargetCommitish))
+# Check Armstrong Configurations
+$terraformErrors = @()
 
 if (!$filesToCheck) {
   LogInfo "No Terraform files found to check"
