@@ -178,6 +178,11 @@ try {
       LogInfo $responseObject.body
       $hasArmstrongTestResult = $true
 
+      if ($responseObject.body.Contains("Approved-Suppression")) {
+        LogInfo "The API TEST ERROR REPORT is tagged Approved-Suppression"
+        continue
+      }
+
       if ($responseObject.body.Contains("**message**:")) {
         LogError "Please fix all errors in API TEST ERROR REPORT: $($responseObject.html_url)"
       }
