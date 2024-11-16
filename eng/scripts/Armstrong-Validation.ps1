@@ -97,15 +97,13 @@ $repoPath = Resolve-Path "$PSScriptRoot/../.."
 # Check whether new swagger files have Armstrong Configurations
 $addedFiles = Get-AddedSwaggerFiles
 foreach ($file in $addedFiles) {
+  $directory = Split-Path -Path $file -Parent
   $filePath = (Join-Path $repoPath $file)
-  LogInfo $filePath
-  $directory = Split-Path -Path $filePath -Parent
-  LogInfo $directory
-  $terraformPath = (Join-Path $directory "terraform")
-  LogInfo $terraformPath
+  $directoryPath = (Join-Path $repoPath $directory)
+  $terraformPath = (Join-Path $directoryPath "terraform")
 
   if (!(Test-Path -Path $terraformPath)) {
-    LogError "The directroy of the new swagger file $(Split-Path -Path $file -Parent) does not have Armstrong Configurations"
+    LogError "The directroy of the new swagger file $directory does not have Armstrong Configurations"
     exit 1
   }
 }
