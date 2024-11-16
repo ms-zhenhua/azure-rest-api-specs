@@ -157,8 +157,6 @@ if ($terraformErrors.Count -gt 0) {
   exit 1
 }
 
-exit 0
-
 # Check the Armstrong Test Result
 $repositoryId = [Environment]::GetEnvironmentVariable("GITHUB_REPOSITORY", [EnvironmentVariableTarget]::Process)
 LogInfo "Repository ID: $repositoryId"
