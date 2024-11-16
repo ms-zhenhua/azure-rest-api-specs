@@ -112,7 +112,7 @@ foreach ($file in $addedFiles) {
     $_.StartsWith($directory)
   })
 
-  if ($terraformFiles.Count == 0) {
+  if ($terraformFiles.Count -eq 0) {
     LogError "The directroy of the new swagger file $directory does not have Armstrong Configurations"
     exit 1
   }
