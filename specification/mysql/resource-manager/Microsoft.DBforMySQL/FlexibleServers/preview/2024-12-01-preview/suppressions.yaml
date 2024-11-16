@@ -1,3 +1,2 @@
 - tool: ArmstrongValidation
-  path: specification/mysql/resource-manager/Microsoft.DBforMySQL/FlexibleServers/preview/2024-12-01-preview
   reason: Test

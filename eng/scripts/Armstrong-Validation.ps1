@@ -99,13 +99,10 @@ $filesToCheck = (Get-ChangedTerraformFiles (Get-ChangedFiles $BaseCommitish $Tar
 $addedFiles = Get-AddedSwaggerFiles
 foreach ($file in $addedFiles) {
   $directory = Split-Path -Path $file -Parent
-  LogInfo $directory
-  $suppression = Get-Suppression "ArmstrongValidation" $directory
-  LogInfo $suppression
+  $suppression = Get-Suppression "ArmstrongValidation" (Join-Path $repoPath $file)
   if ($suppression) {
     $reason = $suppression["reason"] ?? "<no reason specified>"
-
-    LogInfo "$directory suppressed Armstrong Test: $reason"
+    LogInfo "$file suppressed Armstrong Test: $reason"
     continue
   }
 
