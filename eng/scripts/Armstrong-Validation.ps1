@@ -105,7 +105,7 @@ foreach ($file in $addedFiles) {
   LogInfo $terraformPath
 
   if (!(Test-Path -Path $terraformPath)) {
-    LogError "The new swagger file $filePath does not have Armstrong Configurations)"
+    LogError "The directroy of the new swagger file $(Split-Path -Path $file -Parent) does not have Armstrong Configurations"
     exit 1
   }
 }
