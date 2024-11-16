@@ -100,6 +100,7 @@ $addedFiles = Get-AddedSwaggerFiles
 foreach ($file in $addedFiles) {
   $directory = Split-Path -Path $file -Parent
   $filePath = Join-Path $repoPath $file
+  LogInfo $filePath
   $suppression = Get-Suppression "ArmstrongValidation" $filePath
   if ($suppression) {
     $reason = $suppression["reason"] ?? "<no reason specified>"
