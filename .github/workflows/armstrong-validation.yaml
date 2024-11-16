@@ -1,21 +1,16 @@
 name: Armstrong Validation
 
 on: 
-  pull_request: 
-  issue_comment:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - edited
+      - ready_for_review
+      - labeled
+      - unlabeled
   
 jobs:
-  pr_commented:
-    # This job only runs for pull request comments
-    name: PR comment
-    if: ${{ github.event.issue.pull_request }}
-    runs-on: ubuntu-latest
-    steps:
-      - run: |
-          echo A comment on PR $NUMBER
-        env:
-          NUMBER: ${{ github.event.issue.number }}
-          
   armstrong-validation:
     name: Armstrong Validation
     runs-on: ubuntu-latest
