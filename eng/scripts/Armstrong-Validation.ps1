@@ -92,15 +92,25 @@ function Get-AddedSwaggerFiles() {
   return $addedSwaggerFiles
 }
 
-# Check whether new swagger files have Armstrong Configurations
-$addedFiles = Get-AddedSwaggerFiles
-LogInfo $addedFiles
-
-exit 0
-
-#
 $repoPath = Resolve-Path "$PSScriptRoot/../.."
 
+# Check whether new swagger files have Armstrong Configurations
+$addedFiles = Get-AddedSwaggerFiles
+foreach ($file in $addedFiles) {
+  $filePath = (Join-Path $repoPath $file)
+  LogInfo $filePath
+  $directory = Split-Path -Path $filePath -Parent
+  LogInfo $directory
+  $terraformPath = (Join-Path $directory "terraform")
+  LogInfo $terraformPath
+
+  if (!(Test-Path -Path $terraformPath)) {
+    LogError "The new swagger file $filePath does not have Armstrong Configurations)"
+    exit 1
+  }
+}
+
+#
 $terraformErrors = @()
 
 $filesToCheck = (Get-ChangedTerraformFiles (Get-ChangedFiles $BaseCommitish $TargetCommitish))
