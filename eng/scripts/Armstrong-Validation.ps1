@@ -98,6 +98,14 @@ $repoPath = Resolve-Path "$PSScriptRoot/../.."
 $addedFiles = Get-AddedSwaggerFiles
 foreach ($file in $addedFiles) {
   $directory = Split-Path -Path $file -Parent
+  $suppression = Get-Suppression "ArmstrongValidation" $directory
+  if ($suppression) {
+    $reason = $suppression["reason"] ?? "<no reason specified>"
+
+    LogInfo "$directory suppressed Armstrong Test: $reason"
+    continue
+  }
+
   $filePath = (Join-Path $repoPath $file)
   $directoryPath = (Join-Path $repoPath $directory)
   $terraformPath = (Join-Path $directoryPath "terraform")
